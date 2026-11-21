@@ -1,1 +1,9 @@
-class BusinessRuleException extends RuntimeException {}
+<?php
+
+namespace App\Exceptions;
+
+use RuntimeException;
+
+class BusinessRuleException extends RuntimeException
+{
+}

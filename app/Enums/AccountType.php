@@ -1,3 +1,11 @@
+<?php
+
+namespace App\Enums;
+
+use App\Domain\AccountRules;
+use App\Domain\CurrentRules;
+use App\Domain\SavingsRules;
+
 enum AccountType: string
 {
     case Savings = 'savings';

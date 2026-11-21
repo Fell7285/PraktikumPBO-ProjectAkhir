@@ -1,15 +1,34 @@
+<?php
+
+namespace App\Services\Transactions;
+
+use App\Contracts\AccountRepositoryInterface;
+use App\Contracts\TransactionHandler;
+use App\Contracts\TransactionRepositoryInterface;
+use App\Enums\TransactionType;
+use App\Models\Account;
+use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
+
 class BillHandler implements TransactionHandler
 {
-    public function __construct(private TransactionRepositoryInterface $transactions) {}
+    public function __construct(
+        private AccountRepositoryInterface $accounts,
+        private TransactionRepositoryInterface $transactions,
+    ) {}
 
     public function handle(Account $source, array $data): Transaction
     {
-        return DB::transaction(function () use ($source, $data) {
-            $source->withdraw((int) $data['amount']);
+        $amount = (int) $data['amount'];
+
+        return DB::transaction(function () use ($source, $amount, $data) {
+            $account = $this->accounts->lock($source->id);
+            $account->withdraw($amount);
+
             return $this->transactions->create([
-                'account_id' => $source->id,
+                'account_id' => $account->id,
                 'type' => TransactionType::Bill,
-                'amount' => (int) $data['amount'],
+                'amount' => $amount,
                 'description' => 'Tagihan ' . ($data['bill_code'] ?? '-'),
             ]);
         });
